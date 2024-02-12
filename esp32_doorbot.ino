@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021,  Timm Murray
+Copyright (c) 2024,  Timm Murray
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -25,14 +25,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
-#include <Tone32.h>
 #include <WiFi.h>
 #include <Wiegand.h>
 
 #include "config.h"
 
 
-const char* version = "4";
+const char* version = "5";
 const char* root_ca = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/\n" \
@@ -62,6 +61,8 @@ const int reader_buzzer = 32;
 
 const String dump_keys_request = "https://rfid-prod.shop.thebodgery.org/secure/dump_active_tags";
 const char* check_key_request = "https://rfid-prod.shop.thebodgery.org/entry/";
+//const String dump_keys_request = "https://rfid-dev.shop.thebodgery.org/secure/dump_active_tags";
+//const char* check_key_request = "https://rfid-dev.shop.thebodgery.org/entry/";
 
 // Time to rebuild cache
 const unsigned long cache_rebuild_time_ms = 60 * 60 * 1000;
@@ -86,12 +87,6 @@ const int door_open_time_ms = 30 * 1000;
 bool is_door_open = false;
 unsigned long door_opened_at = 0;
 const int DOOR_PIN = 13;
-
-// Tones to play when scan is successful or not
-const unsigned int success_tone = NOTE_FS2;
-const unsigned int fail_tone = NOTE_C4;
-const unsigned long tone_time_ms = 2000;
-const unsigned long buzzer_channel = 0;
 
 
 void setup()
@@ -352,34 +347,11 @@ void check_door_status()
 void do_success()
 {
     open_door();
-    play_success_tone();
 }
 
 void do_fail()
 {
-    play_fail_tone();
-}
-
-void play_success_tone()
-{
-    Serial.println( "[TONE.SUCCESS] Playing" );
-    play_tone( success_tone );
-}
-
-void play_fail_tone()
-{
-    Serial.println( "[TONE.FAIL] Playing" );
-    play_tone( fail_tone );
-}
-
-void play_tone( unsigned int note )
-{
-    Serial.println( "[TONE] Playing tone" );
-    Serial.flush();
-
-    // Disabled. This seems to block while it does its thing, which is bad.
-    //
-    //tone( reader_buzzer, success_tone, tone_time_ms, buzzer_channel );
+    // Do nothing, for now
 }
 
 void wiegand_pin_state_change()
