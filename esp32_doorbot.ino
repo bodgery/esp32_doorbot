@@ -148,11 +148,53 @@ void loop()
 }
 
 
+void on_wifi_got_ip(
+    WiFiEvent_t event,
+    WiFiEventInfo_t info
+)
+{
+    IPAddress gateway = WiFi.gatewayIP();
+
+    Serial.println( "Connected!" );
+    Serial.print( "IP: " );
+    Serial.println( WiFi.localIP() );
+    Serial.print( "Default Gateway: " );
+    Serial.println( gateway );
+    Serial.flush();
+}
+
+void on_wifi_disconnected(
+    WiFiEvent_t event,
+    WiFiEventInfo_t info
+)
+{
+    Serial.print( "Disconnected from WiFi, reason: " );
+    Serial.println( info.wifi_sta_disconnected.reason );
+    Serial.println( "Trying to reconnect" );
+
+    WiFi.begin( ssid, psk );
+    while( ! is_wifi_up() ) {
+        delay( 1000 );
+        Serial.print( "." );
+        Serial.flush();
+    }
+}
+
+
 void init_wifi()
 {
     Serial.print( "Connecting to " );
     Serial.print( ssid );
     Serial.print( " " );
+
+    WiFi.onEvent(
+        on_wifi_disconnected,
+        WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED
+    );
+    WiFi.onEvent(
+        on_wifi_got_ip,
+        WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP
+    );
 
     WiFi.setHostname( hostname );
     WiFi.begin( ssid, psk );
@@ -209,15 +251,6 @@ void reconnect_wifi()
         Serial.print( "." );
         Serial.flush();
     }
-
-    IPAddress gateway = WiFi.gatewayIP();
-
-    Serial.println( "Connected!" );
-    Serial.print( "IP: " );
-    Serial.println( WiFi.localIP() );
-    Serial.print( "Default Gateway: " );
-    Serial.println( gateway );
-    Serial.flush();
 }
 
 void check_serial_commands()
