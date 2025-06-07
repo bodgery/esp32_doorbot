@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 
 
-const char* version = "6";
+const char* version = "7";
 const char* root_ca = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIFBTCCAu2gAwIBAgIQS6hSk/eaL6JzBkuoBI110DANBgkqhkiG9w0BAQsFADBP\n" \
@@ -148,6 +148,14 @@ void loop()
 }
 
 
+void on_wifi_connected(
+    WiFiEvent_t event,
+    WiFiEventInfo_t info
+)
+{
+    Serial.println( "Connected to WiFi" );
+}
+
 void on_wifi_got_ip(
     WiFiEvent_t event,
     WiFiEventInfo_t info
@@ -160,6 +168,8 @@ void on_wifi_got_ip(
     Serial.println( WiFi.localIP() );
     Serial.print( "Default Gateway: " );
     Serial.println( gateway );
+    Serial.print( "Signal: " );
+    Serial.println( WiFi.RSSI() );
     Serial.flush();
 }
 
@@ -172,21 +182,16 @@ void on_wifi_disconnected(
     Serial.println( info.wifi_sta_disconnected.reason );
     Serial.println( "Trying to reconnect" );
 
-    WiFi.begin( ssid, psk );
-    while( ! is_wifi_up() ) {
-        delay( 1000 );
-        Serial.print( "." );
-        Serial.flush();
-    }
+    WiFi.begin();
 }
 
 
-void init_wifi()
+void config_wifi()
 {
-    Serial.print( "Connecting to " );
-    Serial.print( ssid );
-    Serial.print( " " );
-
+    WiFi.onEvent(
+        on_wifi_connected,
+        WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED
+    );
     WiFi.onEvent(
         on_wifi_disconnected,
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED
@@ -197,8 +202,16 @@ void init_wifi()
     );
 
     WiFi.setHostname( hostname );
+}
+
+void init_wifi()
+{
+    Serial.print( "Connecting to " );
+    Serial.print( ssid );
+    Serial.print( " " );
+
+    config_wifi();
     WiFi.begin( ssid, psk );
-    reconnect_wifi();
 }
 
 void init_wiegand()
@@ -228,29 +241,15 @@ void init_wiegand()
 
 bool is_wifi_up()
 {
-    if( WiFi.status() != WL_CONNECTED ) {
-        Serial.println( "WiFi is down" );
-        return false;
-    }
-
-    return true;
+    return WiFi.status() == WL_CONNECTED;
 }
 
 void reconnect_wifi()
 {
-    if( is_wifi_up() ) {
-        Serial.println( "WiFi is up, forcing disconnect" );
-        WiFi.disconnect();
-    }
+    Serial.println( "Force disconnecting WiFi" );
+    WiFi.disconnect();
 
-    Serial.println( "Reconnecting WiFi" );
-    WiFi.reconnect();
-
-    while( ! is_wifi_up() ) {
-        delay( 1000 );
-        Serial.print( "." );
-        Serial.flush();
-    }
+    // Let the disconnection/connection events take things from here
 }
 
 void check_serial_commands()
@@ -274,6 +273,8 @@ void handle_serial_command( String cmd )
         Serial.println( version );
         Serial.print( "[STATS] IP: " );
         Serial.println( WiFi.localIP() );
+        Serial.print( "[STATS] Signal: " );
+        Serial.println( WiFi.RSSI() );
         Serial.print( "[STATS] Hostname: " );
         Serial.println( hostname );
         Serial.print( "[STATS] MAC Address: " );
@@ -312,12 +313,16 @@ void handle_serial_command( String cmd )
             Serial.flush();
         }
     }
+    else if( cmd.equals( "reconnect" ) ) {
+        reconnect_wifi();
+    }
     else if( cmd.equals( "help" ) ) {
         Serial.println( "[HELP] Commands:" );
         Serial.println( "[HELP] check <ID> - Check if a keyfob is valid" );
         Serial.println( "[HELP] newcache - Rebuild the cache" );
         Serial.println( "[HELP] open - Open the door" );
         Serial.println( "[HELP] stats - Dump info about this doorbot" );
+        Serial.println( "[HELP] reconnect - Force WiFi to reconnect" );
     }
     else {
         Serial.print( "[CMD] Unrecognized command: {" );
@@ -544,6 +549,18 @@ void check_cache_build_time()
 
 void rebuild_cache()
 {
+    if(! is_wifi_up() ) {
+        Serial.print( "Waiting for WiFi to come up" );
+        Serial.flush();
+
+        while(! is_wifi_up() ) {
+            Serial.print( "." );
+            Serial.flush();
+        }
+
+        Serial.println( "Connected!" );
+    }
+
     unsigned long mem_before = ESP.getFreeHeap();
     Serial.print( "[CACHE] Heap free before rebuilding cache: " );
     Serial.println( mem_before );
