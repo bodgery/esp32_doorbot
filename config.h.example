@@ -38,5 +38,6 @@ const char* mqtt_cert = \
     "x21XAjS0Nu4OLCfe3fM6l2rP2sBT7NZW\n" \
     "-----END CERTIFICATE-----\n";
 
+const char* ota_md5_password = "";
 
 #endif

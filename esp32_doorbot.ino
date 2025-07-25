@@ -24,6 +24,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <ArduinoJson.h>
+#include <ArduinoOTA.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <Wiegand.h>
@@ -31,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 
 
-const char* version = "7";
+const char* version = "8";
 const char* root_ca = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIFBTCCAu2gAwIBAgIQS6hSk/eaL6JzBkuoBI110DANBgkqhkiG9w0BAQsFADBP\n" \
@@ -134,6 +135,7 @@ void setup()
     init_wifi();
     rebuild_cache();
     init_wiegand();
+    config_ota();
 
     pinMode( DOOR_PIN, OUTPUT );
     digitalWrite( DOOR_PIN, LOW );
@@ -145,6 +147,7 @@ void loop()
     check_serial_commands();
     check_cache_build_time();
     check_door_status();
+    ArduinoOTA.handle();
 }
 
 
@@ -202,6 +205,42 @@ void config_wifi()
     );
 
     WiFi.setHostname( hostname );
+}
+
+void config_ota()
+{
+    ArduinoOTA.setHostname( hostname );
+    ArduinoOTA.setPasswordHash( ota_md5_password );
+
+    ArduinoOTA
+        .onStart([]() {
+            String type;
+            if (ArduinoOTA.getCommand() == U_FLASH) {
+                type = "sketch";
+            }
+            else { // U_SPIFFS
+                type = "filesystem";
+            }
+
+            // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+            Serial.println("Start updating " + type);
+        })
+        .onEnd([]() {
+            Serial.println("\nEnd");
+        })
+        .onProgress([](unsigned int progress, unsigned int total) {
+            Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        })
+        .onError([](ota_error_t error) {
+            Serial.printf("Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+            else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+            else if (error == OTA_END_ERROR) Serial.println("End Failed");
+        });
+
+    ArduinoOTA.begin();
 }
 
 void init_wifi()
