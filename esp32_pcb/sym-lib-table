@@ -1,3 +1,5 @@
 (sym_lib_table
-  (lib (name Tinkerforge)(type Legacy)(uri /home/tmurray/proj/tinkerforge-kicad/tinkerforge.lib)(options "")(descr ""))
+  (version 7)
+  (lib (name "Tinkerforge")(type "Legacy")(uri "/home/tmurray/proj/tinkerforge-kicad/tinkerforge.lib")(options "")(descr ""))
+  (lib (name "esp32_doorbot-rescue")(type "KiCad")(uri "${KIPRJMOD}/esp32_doorbot-rescue.kicad_sym")(options "")(descr ""))
 )

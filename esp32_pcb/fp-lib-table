@@ -1,3 +1,5 @@
 (fp_lib_table
-  (lib (name tinkerforge-kicad)(type KiCad)(uri /home/tmurray/proj/tinkerforge-kicad.pretty)(options "")(descr ""))
+  (version 7)
+  (lib (name "tinkerforge-kicad")(type "KiCad")(uri "/home/tmurray/proj/tinkerforge-kicad.pretty")(options "")(descr ""))
+  (lib (name "esp32_doorbot")(type "KiCad")(uri "${KIPRJMOD}/esp32_doorbot.pretty")(options "")(descr ""))
 )
