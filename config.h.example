@@ -2,14 +2,37 @@
 #  define CONFIG_H
 
 const char* ssid = "The Bodgery";
-const char* psk = "";
+const char* psk = "xxx";
 
-const char* location = "woodshop.door";
+// If true, the output to the door latch is normally high. If false, it's 
+// normally low.
+//
+// Most electric strikes need it normally low. Some other types need 
+// normally high.
+const bool output_normally_high = false;
 
-const char* auth_user = "";
-const char* auth_passwd = "";
+//const char* location = "front.door";
+//const char* location = "cleanroom.door";
+//const char* location = "garage.door";
+//const char* location = "woodshop.door";
+//const char* location = "dummy";
+//const char* location = "front.door";
+//const char* location = "back_main.door";
+//const char* location = "back_annex.door";
+const char* location = "gate.internal";
+//const char* location = "gate.external";
 
-const char* hostname = "testdoorbot";
+const char* auth_user = "backdoorbot";
+const char* auth_passwd = "xxx";
+
+//const char* hostname = "backannexdoorbot2";
+//const char* hostname = "frontdoorbot";
+//const char* hostname = "woodshopdoorbot";
+//const char* hostname = "backdoorbot";
+//const char* hostname = "annexdoorbot";
+//const char* hostname = "dummydoorbot";
+const char* hostname = "gateinteraldoorbot";
+//const char* hostname = "gateexternaldoorbot";
 
 const char* mqtt_open_key = "doorbot.woodshop.open";
 const char* mqtt_broker = "mqtts://10.0.4.154";
@@ -38,6 +61,7 @@ const char* mqtt_cert = \
     "x21XAjS0Nu4OLCfe3fM6l2rP2sBT7NZW\n" \
     "-----END CERTIFICATE-----\n";
 
-const char* ota_md5_password = "";
+const char* ota_md5_password = "xxx";
+
 
 #endif

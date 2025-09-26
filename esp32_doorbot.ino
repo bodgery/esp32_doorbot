@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 
 
-const char* version = "8";
+const char* version = "9";
 const char* root_ca = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIEYDCCAkigAwIBAgIQB55JKIY3b9QISMI/xjHkYzANBgkqhkiG9w0BAQsFADBP\n" \
@@ -461,7 +461,13 @@ void open_door()
     else {
         door_opened_at = millis();
         is_door_open = true;
-        digitalWrite( DOOR_PIN, HIGH );
+
+        if( output_normally_high ) {
+            digitalWrite( DOOR_PIN, LOW );
+        }
+        else {
+            digitalWrite( DOOR_PIN, HIGH );
+        }
 
         Serial.println( "[DOOR] Opening door" );
         Serial.flush();
@@ -474,7 +480,13 @@ void close_door()
     Serial.flush();
 
     is_door_open = false;
-    digitalWrite( DOOR_PIN, LOW );
+
+    if( output_normally_high ) {
+        digitalWrite( DOOR_PIN, HIGH );
+    }
+    else {
+        digitalWrite( DOOR_PIN, LOW );
+    }
 }
 
 void check_door_status()
